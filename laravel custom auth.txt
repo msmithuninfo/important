@@ -1,0 +1,455 @@
+Step:1>>>>>>>>>>>>>>>>>>
+Create Folder in Views>auth
+Create file in auth>login.blade.php
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Login</title>
+
+  <!-- Google Font: Source Sans Pro -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="{{ url('public/assets/plugins/fontawesome-free/css/all.min.css') }}">
+  <!-- icheck bootstrap -->
+  <link rel="stylesheet" href="{{ url('public/assets/plugins/icheck-bootstrap/icheck-bootstrap.min.css') }}">
+  <!-- Theme style -->
+  <link rel="stylesheet" href="{{ url('public/assets/dist/css/adminlte.min.css') }}">
+</head>
+<body class="hold-transition login-page">
+<div class="login-box">
+  <!-- /.login-logo -->
+  <div class="card card-outline card-primary">
+    <div class="card-header text-center">
+      <a href="../../index2.html" class="h1"><b>Login</b></a>
+    </div>
+    <div class="card-body">
+      <p class="login-box-msg">Sign in to start your session</p>
+
+        @include('_message')
+
+      <form action="{{ url('login') }}" method="post">
+        @csrf
+        <div class="input-group mb-3">
+          <input type="email" required name="email" class="form-control" placeholder="Email">
+          <div class="input-group-append">
+            <div class="input-group-text">
+              <span class="fas fa-envelope"></span>
+            </div>
+          </div>
+        </div>
+        <div class="input-group mb-3">
+          <input type="password" required name="password" class="form-control" placeholder="Password">
+          <div class="input-group-append">
+            <div class="input-group-text">
+              <span class="fas fa-lock"></span>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-8">
+            <div class="icheck-primary">
+              <input type="checkbox" id="remember" name="remember">
+              <label for="remember">
+                Remember Me
+              </label>
+            </div>
+          </div>
+          <!-- /.col -->
+          <div class="col-4">
+            <button type="submit" class="btn btn-primary btn-block">Sign In</button>
+          </div>
+          <!-- /.col -->
+        </div>
+      </form>
+
+
+      <p class="mb-1">
+        <a href="{{ url('forgot-password') }}">I forgot my password</a>
+      </p>
+    </div>
+    <!-- /.card-body -->
+  </div>
+  <!-- /.card -->
+</div>
+<!-- /.login-box -->
+
+<!-- jQuery -->
+<script src="{{ url('public/assets/plugins/jquery/jquery.min.js') }}"></script>
+<!-- Bootstrap 4 -->
+<script src="{{ url('public/assets/plugins/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
+<!-- AdminLTE App -->
+<script src="{{ url('public/assets/dist/js/adminlte.min.js') }}"></script>
+</body>
+</html>
+
+Step:2>>>>>>>>>>>>>>>>>>
+remove a Route: 
+Route::get('/', function () {
+    return view('welcome');
+});
+create a new controller AuthController
+add a Route:
+Route::get('/', [AuthController::class, 'login']);
+AuthController>
+public function login()
+    {
+        return view('auth.login');
+    }
+Create Route::::
+Route::post('login', [AuthController::class, 'AuthLogin']);
+Controllers>>>AuthLogin:
+public function AuthLogin(Request $request)
+    {
+        dd($request->all());
+    }
+
+public function login()
+    {
+        // dd(Hash::make(11111111));
+        if(!empty(Auth::check()))
+        {
+            return redirect('admin/dashboard');
+        }
+        return view('auth.login');
+    }
+
+
+    public function AuthLogin(Request $request)
+    {
+        $remember = !empty($request->remember) ? true : false;
+        if(Auth::attempt(['email' => $request->email, 'password' => $request->password], $remember))
+        {
+            return redirect('admin/dashboard');
+        }
+        else
+        {
+            return redirect()->back()->with('error', 'Please enter correct email and password');
+        }
+    }
+
+
+Step:3>>>>>>>>>>>>>>>>>>
+now create logout route::::
+Route::get('logout', [AuthController::class, 'logout']);
+AuthController>>>>
+public function logout()
+    {
+        Auth::logout();
+        return redirect(url(''));
+    }
+
+
+
+Step:4>>>>>>>>>>>>>>>>>>
+
+Now create for message show
+views>>>_message.blade.php
+@if (!empty(session('success')))
+    <div class="alert alert-success" role="alert">
+        {{ session('success') }}
+    </div>
+@endif
+
+@if (!empty(session('error')))
+    <div class="alert alert-danger" role="alert">
+        {{ session('error') }}
+    </div>
+@endif
+
+@if (!empty(session('warning')))
+    <div class="alert alert-warning" role="alert">
+        {{ session('warning') }}
+    </div>
+@endif
+
+login.blade.php>>>
+@include('_message')
+
+
+Step:5>>>>>>>>>>>>>>>>>>
+Role based login::::::
+now create 4 user in database users for admin, teacher, student, parent
+add a column>
+Name: user_type, Type: TINYINT, Default: as defined 3, Comments: 1: admin, 2: teacher, 3: student, 4: parent
+change user type for database user_type>>> admin:1, teacher:2, student:3, parent:4
+
+
+
+Step:6>>>>>>>>>>>>>>>>>>
+Now create four middleware
+AdminMiddleware, TeacherMiddleware, StudentMiddleware, ParentMiddleware
+php artisan make:middleware AdminMiddleware
+php artisan make:middleware TeacherMiddleware
+php artisan make:middleware StudentMiddleware
+php artisan make:middleware ParentMiddleware
+AdminMiddleware::::
+<?php
+
+namespace App\Http\Middleware;
+
+use Closure;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Symfony\Component\HttpFoundation\Response;
+
+class AdminMiddleware
+{
+    /**
+     * Handle an incoming request.
+     *
+     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
+     */
+    public function handle(Request $request, Closure $next): Response
+    {
+        if(!empty(Auth::check()))
+        {
+            if(Auth::user()->user_type == 1){
+                return $next($request);
+            }
+            else
+            {
+                Auth::logout();
+                return redirect(url(''));
+            }
+        }
+        else
+        {
+            Auth::logout();
+            return redirect(url(''));
+        }
+    }
+}
+
+Another middleware only change user_type 2 or 3 or 4
+
+
+
+Step:7>>>>>>>>>>>>>>>>>>
+Now go to kernel.php
+protected $middlewareAliases = [
+        'admin' => \App\Http\Middleware\AdminMiddleware::class,
+        'teacher' => \App\Http\Middleware\TeacherMiddleware::class,
+        'student' => \App\Http\Middleware\StudentMiddleware::class,
+        'parent' => \App\Http\Middleware\ParentMiddleware::class,
+    ];
+
+
+
+Step:8>>>>>>>>>>>>>>>>>>
+Now change Route with auth and middleware::::::
+Route::group(['middleware' => 'admin'], function () {
+
+});
+Route::group(['middleware' => 'teacher'], function () {
+
+});
+Route::group(['middleware' => 'student'], function () {
+
+});
+Route::group(['middleware' => 'parent'], function () {
+
+});
+
+
+Step:9>>>>>>>>>>>>>>>>>>
+Route::group(['middleware' => 'admin'], function () {
+    Route::get('admin/dashboard', [DashboardController::class, 'dashboard']);
+});
+Route::group(['middleware' => 'teacher'], function () {
+    Route::get('teacher/dashboard', [DashboardController::class, 'dashboard']);
+});
+Route::group(['middleware' => 'student'], function () {
+    Route::get('student/dashboard', [DashboardController::class, 'dashboard']);
+});
+Route::group(['middleware' => 'parent'], function () {
+    Route::get('parent/dashboard', [DashboardController::class, 'dashboard']);
+});
+
+Step:10>>>>>>>>>>>>>>>>>>
+Now go to Controllers>AuthController>>>
+<?php
+
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+class AuthController extends Controller
+{
+    public function login()
+    {
+        // dd(Hash::make(11111111));
+        if(!empty(Auth::check()))
+        {
+            if(Auth::user()->user_type == 1)
+            {
+                return redirect('admin/dashboard');
+            }
+            else if(Auth::user()->user_type == 2)
+            {
+                return redirect('teacher/dashboard');
+            }
+            else if(Auth::user()->user_type == 3)
+            {
+                return redirect('student/dashboard');
+            }
+            else if(Auth::user()->user_type == 4)
+            {
+                return redirect('parent/dashboard');
+            }
+        }
+        return view('auth.login');
+    }
+
+
+    public function AuthLogin(Request $request)
+    {
+        $remember = !empty($request->remember) ? true : false;
+        if(Auth::attempt(['email' => $request->email, 'password' => $request->password], $remember))
+        {
+            if(Auth::user()->user_type == 1)
+            {
+                return redirect('admin/dashboard');
+            }
+            else if(Auth::user()->user_type == 2)
+            {
+                return redirect('teacher/dashboard');
+            }
+            else if(Auth::user()->user_type == 3)
+            {
+                return redirect('student/dashboard');
+            }
+            else if(Auth::user()->user_type == 4)
+            {
+                return redirect('parent/dashboard');
+            }
+            
+        }
+        else
+        {
+            return redirect()->back()->with('error', 'Please enter correct email and password');
+        }
+    }
+
+    public function logout()
+    {
+        Auth::logout();
+        return redirect(url(''));
+    }
+    
+}
+
+
+
+
+Step:11>>>>>>>>>>>>>>>>>>
+Dashboard wise login use DashboardController
+php artisan make:controller DashboardController
+
+<?php
+
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+
+class DashboardController extends Controller
+{
+    public function dashboard()
+    {
+        if(Auth::user()->user_type == 1)
+        {
+            return view('admin.dashboard');
+        }
+        else if(Auth::user()->user_type == 2)
+        {
+            return view('teacher.dashboard');
+        }
+        else if(Auth::user()->user_type == 3)
+        {
+            return view('student.dashboard');
+        }
+        else if(Auth::user()->user_type == 4)
+        {
+            return view('parent.dashboard');
+        }
+    }
+}
+
+
+
+Step:12>>>>>>>>>>>>>>>>>>
+Dynamic Name:: {{ Auth::user()->name }}
+
+Step:13>>>>>>>>>>>>>>>>>>
+Role Wise showing data>header.blade.php
+<nav class="mt-2">
+        <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+
+          @if (Auth::user()->user_type == 1)
+            <li class="nav-item">
+              <a href="{{ url('admin/dashboard') }}" class="nav-link">
+                <i class="nav-icon fas fa-tachometer-alt"></i>
+                <p>
+                  Dashboard
+                </p>
+              </a>
+            </li>
+
+            <li class="nav-item">
+              <a href="{{ url('admin/admin/list') }}" class="nav-link">
+                <i class="nav-icon far fa-user"></i>
+                <p>
+                  Admin
+                </p>
+              </a>
+            </li>
+          @elseif (Auth::user()->user_type == 2)
+            <li class="nav-item">
+              <a href="{{ url('teacher/dashboard') }}" class="nav-link">
+                <i class="nav-icon fas fa-tachometer-alt"></i>
+                <p>
+                  Dashboard
+                </p>
+              </a>
+            </li>
+          @elseif (Auth::user()->user_type == 3)
+            <li class="nav-item">
+              <a href="{{ url('student/dashboard') }}" class="nav-link">
+                <i class="nav-icon fas fa-tachometer-alt"></i>
+                <p>
+                  Dashboard
+                </p>
+              </a>
+            </li>
+          @elseif (Auth::user()->user_type == 4)
+            <li class="nav-item">
+              <a href="{{ url('parent/dashboard') }}" class="nav-link">
+                <i class="nav-icon fas fa-tachometer-alt"></i>
+                <p>
+                  Dashboard
+                </p>
+              </a>
+            </li>
+
+            
+          @endif
+
+
+          <li class="nav-item">
+            <a href="{{ url('logout') }}" class="nav-link">
+              <p>
+                Logout
+              </p>
+            </a>
+          </li>
+
+        </ul>
+      </nav>
+Step:14>>>>>>>>>>>>>>>>>>
+Views>admin/dashboard
+Views>teacher/dashboard
+Views>student/dashboard
+Views>parent/dashboard

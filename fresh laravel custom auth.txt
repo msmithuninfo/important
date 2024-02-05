@@ -1,0 +1,218 @@
+Step:1>>
+views>>auth>>login.blade.php
+<form action="{{ url('login') }}" method="post">
+        @csrf
+views>>admin>>dashboard.blade.php>> <h2>Admin Dashboard</h2><a href="{{ url('logout') }}">Logout</a>
+views>>teacher>>dashboard.blade.php <h2>Teacher Dashboard</h2><a href="{{ url('logout') }}">Logout</a>
+views>>student>>dashboard.blade.php <h2>Student Dashboard</h2><a href="{{ url('logout') }}">Logout</a>
+views>>parent>>dashboard.blade.php  <h2>Parent Dashboard</h2><a href="{{ url('logout') }}">Logout</a>
+
+
+Step:2>>
+Route::get('/', [AuthController::class, 'login']);
+Route::post('login', [AuthController::class, 'AuthLogin']);
+Route::get('logout', [AuthController::class, 'logout']);
+
+
+Route::group(['middleware' => 'admin'], function () {
+    Route::get('admin/dashboard', [DashboardController::class, 'dashboard']);
+});
+Route::group(['middleware' => 'teacher'], function () {
+    Route::get('teacher/dashboard', [DashboardController::class, 'dashboard']);
+});
+Route::group(['middleware' => 'student'], function () {
+    Route::get('student/dashboard', [DashboardController::class, 'dashboard']);
+});
+Route::group(['middleware' => 'parent'], function () {
+    Route::get('parent/dashboard', [DashboardController::class, 'dashboard']);
+});
+
+
+Step:3>>Controllers
+AuthController>>
+public function login()
+    {
+        if(!empty(Auth::check()))
+        {
+            if(Auth::user()->user_type == 1)
+            {
+                return redirect('admin/dashboard');
+            }
+            else if(Auth::user()->user_type == 2)
+            {
+                return redirect('teacher/dashboard');
+            }
+            else if(Auth::user()->user_type == 3)
+            {
+                return redirect('student/dashboard');
+            }
+            else if(Auth::user()->user_type == 4)
+            {
+                return redirect('parent/dashboard');
+            }
+        }
+        return view('auth.login');
+    }
+
+    public function AuthLogin(Request $request)
+    {
+        $remember = !empty($request->remember) ? true : false;
+        if(Auth::attempt(['email' => $request->email, 'password' => $request->password], $remember))
+        {
+            if(Auth::user()->user_type == 1)
+            {
+                return redirect('admin/dashboard');
+            }
+            else if(Auth::user()->user_type == 2)
+            {
+                return redirect('teacher/dashboard');
+            }
+            else if(Auth::user()->user_type == 3)
+            {
+                return redirect('student/dashboard');
+            }
+            else if(Auth::user()->user_type == 4)
+            {
+                return redirect('parent/dashboard');
+            }
+        }
+        else
+        {
+            return redirect()->back()->with('error', 'Please enter correct email and password');
+        }
+    }
+
+
+    public function logout()
+    {
+        Auth::logout();
+        return redirect(url(''));
+    }
+
+DashboardController>>
+public function dashboard()
+    {
+        if(Auth::user()->user_type == 1)
+        {
+            return view('admin.dashboard');
+        }
+        else if(Auth::user()->user_type == 2)
+        {
+            return view('teacher.dashboard');
+        }
+        else if(Auth::user()->user_type == 3)
+        {
+            return view('student.dashboard');
+        }
+        else if(Auth::user()->user_type == 4)
+        {
+            return view('parent.dashboard');
+        }
+    }
+
+
+
+Step:4>>>>>>>>>>>>>>>>>>
+now create 4 user in database users for admin, teacher, student, parent
+add a column>
+Name: user_type, Type: TINYINT, Default: as defined 3, Comments: 1: admin, 2: teacher, 3: student, 4: parent
+change user type for database user_type>>> admin:1, teacher:2, student:3, parent:4
+
+Step:5>>>>>>>>>>>>>>>>>>
+Now create four middleware
+AdminMiddleware, TeacherMiddleware, StudentMiddleware, ParentMiddleware
+php artisan make:middleware AdminMiddleware
+AdminMiddleware>>
+if(!empty(Auth::check()))
+        {
+            if(Auth::user()->user_type == 1){
+                return $next($request);
+            }
+            else
+            {
+                Auth::logout();
+                return redirect(url(''));
+            }
+        }
+        else
+        {
+            Auth::logout();
+            return redirect(url(''));
+        }
+
+Step:6>>
+Now go to kernel.php
+protected $middlewareAliases = [
+        'admin' => \App\Http\Middleware\AdminMiddleware::class,
+        'teacher' => \App\Http\Middleware\TeacherMiddleware::class,
+        'student' => \App\Http\Middleware\StudentMiddleware::class,
+        'parent' => \App\Http\Middleware\ParentMiddleware::class,
+    ];
+
+
+Step:7>>
+Step:13>>>>>>>>>>>>>>>>>>
+Role Wise showing data>header.blade.php
+<nav class="mt-2">
+        <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+
+          @if (Auth::user()->user_type == 1)
+            <li class="nav-item">
+              <a href="{{ url('admin/dashboard') }}" class="nav-link">
+                <i class="nav-icon fas fa-tachometer-alt"></i>
+                <p>
+                  Dashboard
+                </p>
+              </a>
+            </li>
+
+            <li class="nav-item">
+              <a href="{{ url('admin/admin/list') }}" class="nav-link">
+                <i class="nav-icon far fa-user"></i>
+                <p>
+                  Admin
+                </p>
+              </a>
+            </li>
+          @elseif (Auth::user()->user_type == 2)
+            <li class="nav-item">
+              <a href="{{ url('teacher/dashboard') }}" class="nav-link">
+                <i class="nav-icon fas fa-tachometer-alt"></i>
+                <p>
+                  Dashboard
+                </p>
+              </a>
+            </li>
+          @elseif (Auth::user()->user_type == 3)
+            <li class="nav-item">
+              <a href="{{ url('student/dashboard') }}" class="nav-link">
+                <i class="nav-icon fas fa-tachometer-alt"></i>
+                <p>
+                  Dashboard
+                </p>
+              </a>
+            </li>
+          @elseif (Auth::user()->user_type == 4)
+            <li class="nav-item">
+              <a href="{{ url('parent/dashboard') }}" class="nav-link">
+                <i class="nav-icon fas fa-tachometer-alt"></i>
+                <p>
+                  Dashboard
+                </p>
+              </a>
+            </li>
+
+            
+          @endif
+
+
+          <li class="nav-item">
+            <a href="{{ url('logout') }}" class="nav-link">
+              <p>
+                Logout
+              </p>
+            </a>
+          </li>
+
+        </ul>
+      </nav>
