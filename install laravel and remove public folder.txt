@@ -1,0 +1,6 @@
+Step:1
+c>xampp>htdocs>
+composer create-project laravel/laravel school.com
+public folder ar betorer sob school.com a anbo.
+index.php ar /.. kete dibo
+akhon localhost/school.com browser a dilei open hobe

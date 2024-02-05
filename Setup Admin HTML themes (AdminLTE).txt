@@ -1,0 +1,25 @@
+step1: copy login file from adminLTE and paste welcome.blade.php file
+step2: copy dist and plugins from adminLTE and paste public>assets folder
+change link in welcome.blade.php file
+<link rel="stylesheet" href="{{ url('public/assets/dist/css/adminlte.min.css') }}">
+
+Now create admin dashboard route
+Route::get('admin/dashboard', function () {
+    return view('admin.dashboard');
+});
+
+change app name :::
+.env>APP_URL=http://localhost/school.com/
+DB_HOST=localhost
+DB_DATABASE=laravel.school
+php artisan migrate
+
+views>layouts>
+app.blade.php
+header.blade.php
+footer.blade.php
+
+app.blade.php @include('layouts.header')
+
+
+
