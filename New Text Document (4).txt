@@ -1,0 +1,6 @@
+git init
+git add .
+git commit -m "first hgdfg"
+git status
+git remote add origin link.git
+git push -u origin master

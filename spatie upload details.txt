@@ -1,0 +1,26 @@
+USERNAME
+if0_35323391
+
+PASSWORD
+pSMNXvezO9p0
+
+Website for spatie-permission.lovestoblog.com
+
+HOME DIRECTORY
+/home/vol11_5/infinityfree.com/if0_35323391
+
+WEBSITE IP
+185.27.134.228
+
+HOSTING VOLUME
+vol11_5
+
+Gmail:::::::::::::::
+Cpanel URL: http://cpanel.infinityfree.com
+Password:   46hgvjcn
+
+FTP HostName:  ftp.infinityfree.com
+MySQL Host Name: sql206.infinityfree.com
+
+Database Info::::::::::::::::::
+MySQL DB Name    if0_35323391_spatiepermission

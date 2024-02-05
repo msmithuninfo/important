@@ -1,0 +1,13 @@
+Cpanel URL: http://cpanel.infinityfree.com
+Username:   if0_35376231
+Password:   cqkw6t5g
+
+FTP Username:  if0_35376231
+FTP Password:  cqkw6t5g
+FTP HostName:  ftp.infinityfree.com
+
+MySQL Host Name: sql301.infinityfree.com
+MySQL Password:  cqkw6t5g
+MySQL UserName:  if0_35376231
+
+MySQL DB Name  if0_35376231_schoolmanagementsystem

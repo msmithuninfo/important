@@ -1,0 +1,6 @@
+Has One Through
+a b c 3 ta table
+a ar sathe b ar relation ace
+b ar sathe c ar relation ace
+but a ar sathe c ar relation nai
+

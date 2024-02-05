@@ -1,0 +1,5 @@
+MySQL DB Name	 if0_35323391_spatiepermission
+MySQL User Name	 if0_35323391
+MySQL Password	 khpjcsx8
+MySQL Host Name	 sql206.infinityfree.com
+PHPMyAdmin

@@ -1,0 +1,33 @@
+* {
+    box-sizing: border-box;
+    font-family: sans-serif;
+    padding: 0;
+    margin: 0;
+}
+.container {
+display: grid;
+grid-template-columns: 1fr 1fr 2fr;
+grid-gap: 2px;
+grid-auto-columns: minmax(100px, auto);
+}
+.child{
+
+}
+.child1{
+    background: rgb(223, 139, 139);
+}
+.child2{
+    background: rgb(228, 94, 94);
+}
+.child3{
+    background: rgb(90, 76, 76);
+}
+.child4{
+    background: rgb(112, 35, 35);
+}
+.child5{
+    background: rgb(128, 7, 7);
+}
+.child6{
+    background: rgb(92, 41, 41);
+}

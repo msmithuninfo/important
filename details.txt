@@ -1,0 +1,179 @@
+Step 1: Laravel 10 Installation
+composer create-project laravel/laravel project-name
+cd project-name 
+php artisan serve
+
+Step 2: localhost:: database create and name change in laravel .env database name
+
+Step 3: Create Authentication
+we are generating auth scaffolding in laravel 10 using the laravel UI command:
+composer require laravel/ui
+Install bootstrap auth using the below command:
+php artisan ui bootstrap --auth
+Now, install npm and run dev for better UI results:
+npm install
+npm run dev or npm run build
+
+Step 4: Install Spatie Composer Packages
+composer require spatie/laravel-permission
+composer require laravelcollective/html
+Add the service provider in your config/app.php file:
+Spatie\Permission\PermissionServiceProvider::class,
+For-Example[[
+    'providers' => ServiceProvider::defaultProviders()->merge([
+        /*
+         * Package Service Providers...
+         */
+        Spatie\Permission\PermissionServiceProvider::class,
+        /*
+         * Application Service Providers...
+         */
+        App\Providers\AppServiceProvider::class,
+        App\Providers\AuthServiceProvider::class,
+        // App\Providers\BroadcastServiceProvider::class,
+        App\Providers\EventServiceProvider::class,
+        App\Providers\RouteServiceProvider::class,
+    ])->toArray(),
+]]
+You should publish the migration and the config/permission.php config file:
+php artisan vendor:publish --provider="Spatie\Permission\PermissionServiceProvider"
+Clear your config cache:
+php artisan optimize:clear
+php artisan config:clear
+Run the migrations:
+php artisan migrate
+Add the necessary trait to your User model:
+use Spatie\Permission\Traits\HasRoles;
+class User extends Authenticatable
+{
+    use HasRoles;
+
+    // ...
+}
+php artisan migrate
+
+Step 5: Add Middleware
+To add the middleware, open the Kernel.php file and follow these steps:
+
+protected $middlewareAliases = [
+    // ...
+    'role' => \Spatie\Permission\Middlewares\RoleMiddleware::class,
+    'permission' => \Spatie\Permission\Middlewares\PermissionMiddleware::class,
+    'role_or_permission' => \Spatie\Permission\Middlewares\RoleOrPermissionMiddleware::class,
+];
+
+Step 6: Create Model
+user model, product model, permission model
+php artisan make:model Product -m
+php artisan make:model Permission
+
+Step 7: create controller
+HomeController, UserController, PermissionController, RoleController, ProductController
+php artisan make:controller UserController -r
+php artisan make:controller RoleController -r
+php artisan make:controller ProductController -r
+
+Step 8: Create Route
+ForExample[[
+<?php  
+use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\HomeController;
+use App\Http\Controllers\PermissionController;
+use App\Http\Controllers\RoleController;
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\ProductController;
+use Illuminate\Support\Facades\Auth;
+
+Route::get('/', function () {
+    return view('welcome');
+});
+ 
+Auth::routes();
+  
+Route::get('/home', [HomeController::class, 'index'])->name('home');
+Route::group(['middleware' => ['auth']], function() {
+    Route::resource('roles', RoleController::class);
+    Route::resource('users', UserController::class);
+    Route::resource('products', ProductController::class);
+});
+]]
+
+Step 9: Create Seeder
+php artisan make:seeder PermissionTableSeeder
+PermissionTableSeeder:
+[[
+    <?php
+
+namespace Database\Seeders;
+
+use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use Illuminate\Database\Seeder;
+use Spatie\Permission\Models\Permission;
+
+class PermissionTableSeeder extends Seeder
+{
+    /**
+     * Run the database seeds.
+     */
+    public function run(): void
+    {
+        $permissions = [
+            'role-list',
+            'role-create',
+            'role-edit',
+            'role-delete',
+            'product-list',
+            'product-create',
+            'product-edit',
+            'product-delete'
+        ];
+
+        foreach ($permissions as $permission) {
+            Permission::create(['name' => $permission]);
+       }
+    }
+}
+]]
+php artisan db:seed --class=PermissionTableSeeder
+php artisan make:seeder CreateAdminUserSeeder
+CreateAdminUserSeeder:
+[[
+    <?php
+
+namespace Database\Seeders;
+
+use App\Models\User;
+use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use Illuminate\Database\Seeder;
+use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
+
+class CreateAdminUserSeeder extends Seeder
+{
+    /**
+     * Run the database seeds.
+     */
+    public function run(): void
+    {
+        $user = User::create([
+            'name' => 'Admin', 
+            'email' => 'admin@gmail.com',
+            'password' => bcrypt('11111111')
+        ]);
+        
+        $role = Role::create(['name' => 'Admin']);
+         
+        $permissions = Permission::pluck('id','id')->all();
+       
+        $role->syncPermissions($permissions);
+         
+        $user->assignRole([$role->id]);
+    }
+}
+]]
+php artisan db:seed --class=CreateAdminUserSeeder
+Go To DatabaseSeeder and add all created seeder:
+$this->call([UserSeeder::class, RolePermissionSeeder::class]);
+php artisan migrate:fresh --seed
+
+

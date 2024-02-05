@@ -1,0 +1,56 @@
+*{
+    box-sizing: border-box;
+}
+body{
+    font-family: sans-serif;
+}
+.container {
+    display: flex;
+    /* align-items: flex-start; */
+    /* flex-direction: column; */
+    /* justify-content: space-around; */
+
+}
+.child {
+    padding: 20px 0px;
+    /* flex-basis: 30%; */
+
+}
+.child1{
+    background: red;
+    /* flex: 1; */
+    /* order: 3; */
+
+}
+.child2{
+    background: rgb(109, 45, 45);
+/* flex: 2; */
+/* order: 1; */
+
+}
+.child3{
+    background: rgb(233, 186, 186);
+/* flex: 1; */
+/* order: 2; */
+
+}
+/* @media only screen and (max-width: 768px) {
+    .container {
+        flex-direction: column;
+    }
+  } */
+/* 
+display flex dile pasapasi asbe.
+align-items: flex-start dile hight ar kaj korbe,extra jaiga bad diye dibe.
+    flex-direction: column dile column akare asbe.
+nirdisto poriman jaiga dite chaile protita child ar modde flex: 1 or 2 aivabe dite hobe
+order use kore jekuno div ke je kuno jaigai neuya jai.
+nirdisto poriman jaiga dite chiale flex-basis use korte hobe
+flex-basis use korle kicu jaiga khali pore thakbe.
+sei jaigake use korar jonno justify-content use korte hobe
+css flex kaj kore one dimension hisebe. mane hoi x or y niye kaj kore
+css grid two dimension niye kaj kore. mane aki sathe xy dita niyei kaj kore.
+
+
+
+*/
